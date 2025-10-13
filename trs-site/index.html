@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="google-site-verification" content="16KKE-OHKikG8JRHMWnvzxt4p3KxZZhnu5SPVoAoJM4" />
+  <title>TRS — Güvenli Gelecek</title>
+
+  <!-- 🌟 Favicon (site logosu) -->
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <!-- CSS ve JS dosyaları buraya -->
+</head>
+
+
+<style>
+:root {
+  --bg:#0a0a0a;
+  --text:#e7e7e7;
+  --muted:#a9a9a9;
+  --gold:#d4af37;
+  --accent:#00d8ff;
+  --radius:18px;
+  --shadow:0 10px 30px rgba(0,0,0,.45);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:Poppins,sans-serif;line-height:1.6;overflow-x:hidden;}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;background:rgba(10,10,10,.55);border-bottom:1px solid rgba(255,255,255,.06);z-index:1000}
+.nav{display:flex;align-items:center;justify-content:space-between;height:78px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
+.brand img{height:48px;border-radius:8px}
+nav a{color:var(--text);text-decoration:none;margin:0 12px;font-weight:600;position:relative;opacity:.9;padding:6px 2px}
+nav a:hover{opacity:1}
+nav a:after{content:"";position:absolute;left:0;bottom:-6px;height:2px;width:0;background:linear-gradient(90deg,var(--gold),var(--accent));transition:width .25s}
+nav a:hover:after{width:100%}
+.cta{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:999px;text-decoration:none;background:linear-gradient(135deg,var(--gold),#b58913);color:#111;font-weight:800;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.15)}
+.hero{position:relative;height:100vh;min-height:620px;display:grid;place-items:center;overflow:hidden;text-align:center}
+.hero__bg{position:absolute;inset:0;overflow:hidden;z-index:-2;background:#000}
+.hero__overlay{position:absolute;inset:0;background:radial-gradient(1200px 600px at 70% 30%, rgba(212,175,55,.25), transparent 60%),linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.75) 65%, rgba(0,0,0,.95));z-index:-1}
+.hero__content{padding:0 20px;max-width:980px}
+.kicker{color:var(--gold);text-transform:uppercase;font-weight:700;letter-spacing:.35em;margin-bottom:12px;font-size:12px}
+.title{font-family:Montserrat,sans-serif;font-weight:800;font-size:clamp(32px,5vw,64px);margin:.5rem 0 1rem}
+.subtitle{color:var(--muted);margin-bottom:28px}
+section{padding:90px 0}
+.section-title{font-family:Montserrat,sans-serif;font-size:clamp(24px,3vw,40px);font-weight:800;text-align:center;margin-bottom:14px}
+.section-sub{color:var(--muted);text-align:center;margin-bottom:44px;max-width:760px;margin-left:auto;margin-right:auto}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:44px}
+@media(max-width:980px){.grid-3{grid-template-columns:1fr;gap:24px}}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.07));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:34px 28px 28px 28px;display:flex;flex-direction:column;gap:12px;position:relative;min-height:220px}
+.card__tag{position:absolute;top:18px;right:18px;background:linear-gradient(90deg,var(--gold),var(--accent));color:#181818;font-size:12px;font-weight:700;border-radius:7px;padding:4px 13px;opacity:.85}
+.card h3{font-family:Montserrat,sans-serif;font-weight:700;font-size:1.35rem;margin-bottom:4px;color:var(--gold)}
+.card p{font-size:1rem;color:#e7e7e7;opacity:.95}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+@media(max-width:980px){.split{grid-template-columns:1fr;gap:28px}}
+.panel{background:radial-gradient(500px 220px at 20% 0%, rgba(212,175,55,.14), transparent 50%),linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:50px;box-shadow:var(--shadow)}
+.panel p{font-size:clamp(18px,1.2rem,22px);margin-bottom:12px}
+.list{list-style:none;display:grid;gap:12px}
+a{color:var(--accent)}
+button{cursor:pointer;background:linear-gradient(135deg,var(--gold),var(--accent));border:none;color:#111;font-weight:700;padding:10px 16px;border-radius:12px;transition:0.3s}
+button:hover{opacity:.85}
+.contact-options{display:none;flex-direction:column;gap:10px;margin-top:10px}
+.contact-options a{display:block;text-decoration:none;padding:10px 16px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--accent));color:#111;font-weight:700;text-align:center}
+@media(max-width:768px){.panel p{font-size:clamp(16px,1rem,18px)}}
+
+/* === POPUP === */
+.popup-overlay {
+  display:none;
+  position:fixed;
+  inset:0;
+  backdrop-filter:blur(8px);
+  background:rgba(0,0,0,0.5);
+  z-index:2000;
+  justify-content:center;
+  align-items:center;
+  animation:fadeIn .4s ease forwards;
+}
+.popup {
+  background:#111;
+  border-radius:18px;
+  padding:40px;
+  box-shadow:var(--shadow);
+  text-align:center;
+  animation:scaleIn .3s ease forwards;
+  max-width:320px;
+  width:90%;
+  position:relative;
+}
+.popup h3{color:var(--gold);margin-bottom:18px;font-size:1.4rem}
+.popup a{display:block;margin:10px 0;padding:10px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--accent));color:#111;font-weight:700;text-decoration:none}
+.close-btn{
+  position:absolute;
+  top:10px;
+  right:15px;
+  font-size:26px;
+  color:#fff;
+  cursor:pointer;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a href="#" class="brand"><img src="images/logo.png" alt="TRS Logo"><span>Güvenli Gelecek</span></a>
+    <nav>
+      <a href="#hero">Ana Sayfa</a>
+      <a href="#urunler">Ürünler</a>
+      <a href="#hakkimizda">Hakkımızda</a>
+      <a href="#iletisim">İletişim</a>
+      <a class="cta" href="#" id="teklifBtn">Teklif Al</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="hero">
+  <div class="hero__content">
+    <div class="kicker">TRS • Güvenlik & Liderlik</div>
+    <h1 class="title">Korumak için doğduk, <span style="color:var(--gold)">liderlik</span> için inşa edildik</h1>
+    <p class="subtitle">TRS</p>
+    <div>
+      <a class="cta" href="#urunler">Ürünleri Keşfet</a>
+      <a class="cta" href="#hakkimizda">Neden TRS?</a>
+    </div>
+  </div>
+</section>
+
+<section id="urunler">
+  <div class="container">
+    <h2 class="section-title">Ürünlerimiz</h2>
+    <p class="section-sub">Doğa ile teknolojiyi birleştiren, yüksek güvenlik ve verim odaklı çözümler.</p>
+    <div class="grid-3">
+      <div class="card"><span class="card__tag">Yeni</span><h3>TRS Guard</h3><p>Akıllı sensörlerle güçlendirilmiş güvenlik ve üretim cihazı.</p></div>
+      <div class="card"><span class="card__tag">Pro</span><h3>TRS Sentinel</h3><p>Endüstriyel tesisler için üst seviye güvenlik paneli.</p></div>
+      <div class="card"><span class="card__tag">Enterprise</span><h3>TRS Horizon</h3><p>Kurumsal bulut yönetimi ve filo izleme sistemi.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="hakkimizda">
+  <div class="container">
+    <h2 class="section-title">Hakkımızda</h2>
+    <div class="split">
+      <div class="panel">
+        <p>TRS, güvenlik ve teknolojiyi birleştirerek bireylere ve kurumlara yenilikçi çözümler sunar.</p>
+        <p>AR-GE odaklı yapımız sayesinde, insanların günlük yaşamında karşılaştığı sorunlara akıllı çözümler geliştiriyoruz.</p>
+        <p>Hedefimiz, savunma sanayi ve ileri teknoloji projelerinde global liderliktir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="iletisim">
+  <div class="container">
+    <h2 class="section-title">📞 İletişim</h2>
+    <div class="split">
+      <div class="panel">
+        <h3>📍 Bilgiler</h3>
+        <ul class="list">
+          <li>📍 Konum: Konya, Karatay</li>
+          <li>📞 Telefon: <a href="tel:+905510979299">0551 097 9299</a></li>
+          <li>📧 E-Posta: <a href="mailto:trsturkeyofficial@gmail.com">trsturkeyofficial@gmail.com</a></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>✉️ Mesaj Gönder</h3>
+        <form style="display:flex;flex-direction:column;gap:14px;margin-top:10px;">
+          <input type="text" placeholder="Adınız Soyadınız" required>
+          <input type="email" placeholder="E-posta" required>
+          <textarea placeholder="Mesajınız..." required style="min-height:120px;"></textarea>
+          <button type="submit">Gönder</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- POPUP -->
+<div class="popup-overlay" id="popup">
+  <div class="popup">
+    <span class="close-btn" id="closePopup">×</span>
+    <h3>İletişim Seçiniz</h3>
+    <a href="#" id="phoneOption">📞 Telefonla Ara / WhatsApp</a>
+    <a href="#" id="gmailOption">📧 E-Posta Gönder</a>
+  </div>
+</div>
+
+<script>
+const teklifBtn = document.getElementById('teklifBtn');
+const popup = document.getElementById('popup');
+const closePopup = document.getElementById('closePopup');
+const phoneOption = document.getElementById('phoneOption');
+const gmailOption = document.getElementById('gmailOption');
+
+teklifBtn.addEventListener('click', (e)=>{
+  e.preventDefault();
+  popup.style.display='flex';
+  document.body.style.overflow='hidden';
+});
+closePopup.addEventListener('click', ()=>{
+  popup.style.display='none';
+  document.body.style.overflow='auto';
+});
+popup.addEventListener('click', (e)=>{
+  if(e.target===popup){
+    popup.style.display='none';
+    document.body.style.overflow='auto';
+  }
+});
+
+// Mobil cihaz kontrol fonksiyonu
+function isMobileDevice() {
+  return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+const businessPhone = "+905510979299";
+const whatsappNumber = "905510979299";
+const whatsappPrefill = encodeURIComponent("Merhaba TRS, teklif almak istiyorum. (Site üzerinden geldim.)");
+
+phoneOption.addEventListener('click', (e)=>{
+  e.preventDefault();
+  if(isMobileDevice()){
+    // Mobilde arama
+    window.location.href = "tel:" + businessPhone;
+  } else {
+    // Masaüstünde WhatsApp Web aç
+    const waUrl = "https://web.whatsapp.com/send?phone=" + whatsappNumber + "&text=" + whatsappPrefill;
+    window.open(waUrl, "_blank");
+  }
+  popup.style.display='none';
+  document.body.style.overflow='auto';
+});
+
+// Gmail butonu hem mobil hem PC için çalışacak
+const gmailLink = "https://mail.google.com/mail/?view=cm&fs=1&to=trsturkeyofficial@gmail.com&su=Teklif%20Talebi&body=Merhaba%20TRS%2C%20bir%20teklif%20almak%20istiyorum.";
+gmailOption.addEventListener('click', (e)=>{
+  e.preventDefault();
+  window.open(gmailLink, "_blank");
+  popup.style.display='none';
+  document.body.style.overflow='auto';
+});
+</script>
+
+</body>
+</html>
