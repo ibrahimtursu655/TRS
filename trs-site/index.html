@@ -254,5 +254,65 @@ commentForm.addEventListener('submit', e => {
 });
 </script>
 
+  <!-- Firebase ve Yorum Script kaldırıldı, yerine localStorage ile yorum -->
+<script>
+// === Teklif Al Popup ===
+const teklifBtn=document.getElementById('teklifBtn');
+const popup=document.getElementById('popup');
+const closePopup=document.getElementById('closePopup');
+const phoneOption=document.getElementById('phoneOption');
+const gmailOption=document.getElementById('gmailOption');
+teklifBtn.addEventListener('click',e=>{e.preventDefault();popup.style.display='flex';document.body.style.overflow='hidden';});
+closePopup.addEventListener('click',()=>{popup.style.display='none';document.body.style.overflow='auto';});
+popup.addEventListener('click',e=>{if(e.target===popup){popup.style.display='none';document.body.style.overflow='auto';}});
+function isMobileDevice(){return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);}
+const businessPhone="+905510979299";
+const whatsappNumber="905510979299";
+const whatsappPrefill=encodeURIComponent("Merhaba TRS, teklif almak istiyorum. (Site üzerinden geldim.)");
+phoneOption.addEventListener('click',e=>{
+  e.preventDefault();
+  if(isMobileDevice()){window.location.href="tel:"+businessPhone;}
+  else{window.open("https://web.whatsapp.com/send?phone="+whatsappNumber+"&text="+whatsappPrefill,"_blank");}
+  popup.style.display='none';document.body.style.overflow='auto';
+});
+const gmailLink="https://mail.google.com/mail/?view=cm&fs=1&to=trsturkeyofficial@gmail.com&su=Teklif%20Talebi&body=Merhaba%20TRS%2C%20bir%20teklif%20almak%20istiyorum.";
+gmailOption.addEventListener('click',e=>{e.preventDefault();window.open(gmailLink,"_blank");popup.style.display='none';document.body.style.overflow='auto';});
+
+// === LocalStorage Yorum Sistemi ===
+const commentForm = document.getElementById('commentForm');
+const commentList = document.getElementById('commentList');
+
+function loadComments() {
+  commentList.innerHTML = '';
+  const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+  comments.reverse().forEach(c => {
+    const initials = c.fullName.split(' ').map(n => n[0]).join('');
+    const div = document.createElement('div');
+    div.className = 'comment-item';
+    div.innerHTML = `<strong>${initials}</strong> <span>${'⭐'.repeat(c.rating)}</span><p>${c.message}</p>`;
+    commentList.appendChild(div);
+  });
+}
+
+commentForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const fullName = document.getElementById('fullName').value.trim();
+  const rating = parseInt(document.getElementById('rating').value);
+  const message = document.getElementById('message').value.trim();
+
+  if(!fullName || !message || !rating) return alert("Lütfen tüm alanları doldurun!");
+
+  const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+  comments.push({fullName,rating,message});
+  localStorage.setItem('comments', JSON.stringify(comments));
+
+  commentForm.reset();
+  loadComments();
+});
+
+loadComments();
+</script>
+
 </body>
 </html>
+
