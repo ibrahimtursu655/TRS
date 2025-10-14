@@ -1,17 +1,14 @@
+<!DOCTYPE html>
+<html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="google-site-verification" content="16KKE-OHKikG8JRHMWnvzxt4p3KxZZhnu5SPVoAoJM4" />
   <title>TRS — Güvenli Gelecek</title>
 
-  <!-- 🌟 Favicon (site logosu) -->
-  <link rel="icon" type="image/png" href="images/favicon.png">
+  <!-- 🌟 Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
 
-  <!-- CSS ve JS dosyaları buraya -->
-</head>
-
-
-
-<style>
+  <style>
 :root {
   --bg:#0a0a0a;
   --text:#e7e7e7;
@@ -61,7 +58,6 @@ button:hover{opacity:.85}
 .contact-options a{display:block;text-decoration:none;padding:10px 16px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--accent));color:#111;font-weight:700;text-align:center}
 @media(max-width:768px){.panel p{font-size:clamp(16px,1rem,18px)}}
 
-/* === POPUP === */
 .popup-overlay {
   display:none;
   position:fixed;
@@ -96,10 +92,10 @@ button:hover{opacity:.85}
 }
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes scaleIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
-</style>
+  </style>
 </head>
-<body>
 
+<body>
 <header>
   <div class="container nav">
     <a href="#" class="brand"><img src="images/logo.png" alt="TRS Logo"><span>Güvenli Gelecek</span></a>
@@ -162,26 +158,48 @@ button:hover{opacity:.85}
           <li>📧 E-Posta: <a href="mailto:trsturkeyofficial@gmail.com">trsturkeyofficial@gmail.com</a></li>
         </ul>
       </div>
+
       <div class="panel">
-        <h3>✉️ Mesaj Gönder</h3>
-        <form style="display:flex;flex-direction:column;gap:14px;margin-top:10px;">
-          <input type="text" placeholder="Adınız Soyadınız" required>
-          <input type="email" placeholder="E-posta" required>
-          <textarea placeholder="Mesajınız..." required style="min-height:120px;"></textarea>
-          <button type="submit">Gönder</button>
-        </form>
+        <h3>💬 Yorumlar</h3>
+        <div id="yorumListesi" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"></div>
+        <button id="yorumEkleBtn">Yorum Yaz</button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- POPUP -->
+<!-- Teklif Popup -->
 <div class="popup-overlay" id="popup">
   <div class="popup">
     <span class="close-btn" id="closePopup">×</span>
     <h3>İletişim Seçiniz</h3>
     <a href="#" id="phoneOption">📞 Telefonla Ara / WhatsApp</a>
     <a href="#" id="gmailOption">📧 E-Posta Gönder</a>
+  </div>
+</div>
+
+<!-- Yorum Popup -->
+<div class="popup-overlay" id="yorumPopup" style="display:none;">
+  <div class="popup">
+    <span class="close-btn" id="closeYorumPopup">×</span>
+    <h3>Yorum Yap</h3>
+    <div id="secimEkrani">
+      <a href="#" id="oturumSec">🔐 Oturum Açarak</a>
+      <a href="#" id="misafirSec">👤 Misafir Olarak</a>
+    </div>
+
+    <form id="yorumForm" style="display:none;flex-direction:column;gap:10px;margin-top:10px;">
+      <input type="text" id="yorumAdSoyad" placeholder="Adınız Soyadınız" required>
+      <textarea id="yorumMetin" placeholder="Yorumunuzu yazın..." required style="min-height:100px;"></textarea>
+      <div id="yildizSecimi" style="display:flex;justify-content:center;gap:5px;">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button type="submit">Gönder</button>
+    </form>
   </div>
 </div>
 
@@ -197,51 +215,47 @@ teklifBtn.addEventListener('click', (e)=>{
   popup.style.display='flex';
   document.body.style.overflow='hidden';
 });
-closePopup.addEventListener('click', ()=>{
-  popup.style.display='none';
-  document.body.style.overflow='auto';
-});
-popup.addEventListener('click', (e)=>{
-  if(e.target===popup){
-    popup.style.display='none';
-    document.body.style.overflow='auto';
-  }
-});
+closePopup.addEventListener('click', ()=>{popup.style.display='none';document.body.style.overflow='auto';});
+popup.addEventListener('click', (e)=>{if(e.target===popup){popup.style.display='none';document.body.style.overflow='auto';}});
 
-// Mobil cihaz kontrol fonksiyonu
-function isMobileDevice() {
-  return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-const businessPhone = "+905510979299";
-const whatsappNumber = "905510979299";
-const whatsappPrefill = encodeURIComponent("Merhaba TRS, teklif almak istiyorum. (Site üzerinden geldim.)");
-
-phoneOption.addEventListener('click', (e)=>{
+function isMobileDevice(){return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);}
+const businessPhone="+905510979299";
+const whatsappNumber="905510979299";
+const whatsappPrefill=encodeURIComponent("Merhaba TRS, teklif almak istiyorum. (Site üzerinden geldim.)");
+phoneOption.addEventListener('click',(e)=>{
   e.preventDefault();
-  if(isMobileDevice()){
-    // Mobilde arama
-    window.location.href = "tel:" + businessPhone;
-  } else {
-    // Masaüstünde WhatsApp Web aç
-    const waUrl = "https://web.whatsapp.com/send?phone=" + whatsappNumber + "&text=" + whatsappPrefill;
-    window.open(waUrl, "_blank");
-  }
-  popup.style.display='none';
-  document.body.style.overflow='auto';
+  if(isMobileDevice()){window.location.href="tel:"+businessPhone;}
+  else{window.open("https://web.whatsapp.com/send?phone="+whatsappNumber+"&text="+whatsappPrefill,"_blank");}
+  popup.style.display='none';document.body.style.overflow='auto';
 });
+const gmailLink="https://mail.google.com/mail/?view=cm&fs=1&to=trsturkeyofficial@gmail.com&su=Teklif%20Talebi&body=Merhaba%20TRS%2C%20bir%20teklif%20almak%20istiyorum.";
+gmailOption.addEventListener('click',(e)=>{e.preventDefault();window.open(gmailLink,"_blank");popup.style.display='none';document.body.style.overflow='auto';});
 
-// Gmail butonu hem mobil hem PC için çalışacak
-const gmailLink = "https://mail.google.com/mail/?view=cm&fs=1&to=trsturkeyofficial@gmail.com&su=Teklif%20Talebi&body=Merhaba%20TRS%2C%20bir%20teklif%20almak%20istiyorum.";
-gmailOption.addEventListener('click', (e)=>{
+// === YORUM SİSTEMİ ===
+const yorumEkleBtn=document.getElementById('yorumEkleBtn');
+const yorumPopup=document.getElementById('yorumPopup');
+const closeYorumPopup=document.getElementById('closeYorumPopup');
+const secimEkrani=document.getElementById('secimEkrani');
+const yorumForm=document.getElementById('yorumForm');
+const yorumListesi=document.getElementById('yorumListesi');
+let secilenPuan=0;
+
+yorumEkleBtn.addEventListener('click',()=>{yorumPopup.style.display='flex';secimEkrani.style.display='block';yorumForm.style.display='none';});
+closeYorumPopup.addEventListener('click',()=>yorumPopup.style.display='none');
+yorumPopup.addEventListener('click',e=>{if(e.target===yorumPopup)yorumPopup.style.display='none';});
+document.getElementById('oturumSec').addEventListener('click',e=>{e.preventDefault();secimEkrani.style.display='none';yorumForm.style.display='flex';});
+document.getElementById('misafirSec').addEventListener('click',e=>{e.preventDefault();secimEkrani.style.display='none';yorumForm.style.display='flex';});
+document.querySelectorAll('.star').forEach(star=>{
+  star.addEventListener('click',()=>{
+    secilenPuan=parseInt(star.dataset.value);
+    document.querySelectorAll('.star').forEach(s=>s.style.color='#555');
+    for(let i=0;i<secilenPuan;i++){document.querySelectorAll('.star')[i].style.color='gold';}
+  });
+});
+yorumForm.addEventListener('submit',e=>{
   e.preventDefault();
-  window.open(gmailLink, "_blank");
-  popup.style.display='none';
-  document.body.style.overflow='auto';
-});
-</script>
-
-</body>
-</html>
-
-
+  const adSoyad=document.getElementById('yorumAdSoyad').value.trim();
+  const yorum=document.getElementById('yorumMetin').value.trim();
+  if(!adSoyad||!yorum||secilenPuan===0)return alert('Lütfen tüm alanları doldurunuz.');
+  const basHarfler=adSoyad.split(' ').map(k=>k[0].toUpperCase()).join('. ')+'.';
+  const
