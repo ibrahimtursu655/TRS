@@ -29,12 +29,14 @@
     .comment-controls{max-width:800px;margin:20px auto;text-align:right}
     .comment-controls select{padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.08);color:#fff;border:none;}
     .comment-list{max-width:800px;margin:20px auto 0;display:grid;gap:12px}
-    .comment-item{background:rgba(255,255,255,0.03);padding:14px;border-radius:12px}
+    .comment-item{background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;position:relative}
     .comment-item .meta{display:flex;align-items:center;gap:12px;margin-bottom:8px}
     .comment-item .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--accent));display:flex;align-items:center;justify-content:center;color:#111;font-weight:700}
     .comment-item .name{font-weight:700;color:var(--gold)}
     .comment-item .rating{color:var(--accent)}
     .comment-item p{margin-top:6px;color:var(--text);line-height:1.4}
+    .comment-item .delete-btn{position:absolute;top:8px;right:8px;padding:4px 8px;border:none;border-radius:6px;background:rgba(255,0,0,0.6);color:#fff;cursor:pointer;font-size:0.8rem}
+
     .pagination{max-width:800px;margin:30px auto 0;text-align:center}
     .pagination button{margin:0 5px;padding:8px 14px;border:none;border-radius:8px;background:rgba(255,255,255,0.08);color:#fff;cursor:pointer}
     .pagination button.active{background:var(--gold);color:#111;font-weight:700}
@@ -52,168 +54,211 @@
     @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
     .notify .text{margin-top:8px;color:#fff}
     .notify .reason{margin-top:10px;color:#ffd6d6;font-size:0.95rem}
+
+    /* Silme onay modal */
+    .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:4000;align-items:center;justify-content:center}
+    .confirm-box{background:#111;padding:24px;border-radius:12px;max-width:400px;text-align:center;color:#fff}
+    .confirm-box h3{margin-bottom:20px;color:var(--gold)}
+    .confirm-box button{margin:0 10px;padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+    .confirm-box .accept{background:var(--gold);color:#111}
+    .confirm-box .cancel{background:rgba(255,255,255,0.08);color:#fff}
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="container nav">
-      <a href="#" class="brand"><img src="images/logo.png" alt="TRS Logo"><span>Güvenli Gelecek</span></a>
-      <nav>
-        <a href="#hero">Ana Sayfa</a>
-        <a href="#urunler">Ürünler</a>
-        <a href="#hakkimizda">Hakkımızda</a>
-        <a href="#iletisim">İletişim</a>
-        <a class="cta" href="#" id="teklifBtn">Teklif Al</a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- 💬 YORUMLAR -->
-  <section class="comment-section" id="yorumlar">
-    <div class="container">
-      <h2>💬 Yorumlar</h2>
-      <form class="comment-form" id="commentForm">
-        <input type="text" id="fullName" placeholder="Adınız Soyadınız (ör: Ahmet Yılmaz)" required>
-        <select id="rating" required>
-          <option value="" disabled selected>Puan verin</option>
-          <option value="1">1 — ⭐</option>
-          <option value="2">2 — ⭐⭐</option>
-          <option value="3">3 — ⭐⭐⭐</option>
-          <option value="4">4 — ⭐⭐⭐⭐</option>
-          <option value="5">5 — ⭐⭐⭐⭐⭐</option>
-        </select>
-        <textarea id="message" placeholder="Yorumunuz..." required rows="5"></textarea>
-        <button type="submit">Gönder</button>
-      </form>
-
-      <div class="comment-controls">
-        <label for="sortSelect">Sırala: </label>
-        <select id="sortSelect">
-          <option value="timestamp_desc">En Yeni</option>
-          <option value="rating_desc">En Yüksek Puan</option>
-          <option value="rating_asc">En Düşük Puan</option>
-        </select>
-      </div>
-
-      <div class="comment-list" id="commentList"></div>
-      <div class="pagination" id="pagination"></div>
-    </div>
-  </section>
-
-  <!-- Bildirim kutusu -->
-  <div class="notify-overlay" id="notifyOverlay" aria-hidden="true">
-    <div class="notify" id="notifyBox">
-      <div class="close" id="notifyClose">×</div>
-      <div class="icon-wrap">
-        <div class="ring" id="ringAnim" style="display:none"></div>
-        <div class="icon" id="notifyIcon">✓</div>
-      </div>
-      <div class="text" id="notifyText">Başarıyla gönderildi.</div>
-      <div class="reason" id="notifyReason" style="display:none"></div>
-    </div>
+<header>
+  <div class="container nav">
+    <a href="#" class="brand"><img src="images/logo.png" alt="TRS Logo"><span>Güvenli Gelecek</span></a>
+    <nav>
+      <a href="#hero">Ana Sayfa</a>
+      <a href="#urunler">Ürünler</a>
+      <a href="#hakkimizda">Hakkımızda</a>
+      <a href="#iletisim">İletişim</a>
+      <a class="cta" href="#" id="teklifBtn">Teklif Al</a>
+    </nav>
   </div>
+</header>
 
-  <!-- Teklif Al popup -->
-  <div class="popup-overlay" id="popup">
-    <div class="popup">
-      <span class="close-btn" id="closePopup">×</span>
-      <h3>İletişim Seçiniz</h3>
-      <a href="#" id="phoneOption">📞 Telefonla Ara / WhatsApp</a>
-      <a href="#" id="gmailOption">📧 E-Posta Gönder</a>
+<section class="comment-section" id="yorumlar">
+  <div class="container">
+    <h2>💬 Yorumlar</h2>
+    <form class="comment-form" id="commentForm">
+      <input type="text" id="fullName" placeholder="Adınız Soyadınız (ör: Ahmet Yılmaz)" required>
+      <select id="rating" required>
+        <option value="" disabled selected>Puan verin</option>
+        <option value="1">1 — ⭐</option>
+        <option value="2">2 — ⭐⭐</option>
+        <option value="3">3 — ⭐⭐⭐</option>
+        <option value="4">4 — ⭐⭐⭐⭐</option>
+        <option value="5">5 — ⭐⭐⭐⭐⭐</option>
+      </select>
+      <textarea id="message" placeholder="Yorumunuz..." required rows="5"></textarea>
+      <button type="submit">Gönder</button>
+    </form>
+
+    <div class="comment-controls">
+      <label for="sortSelect">Sırala: </label>
+      <select id="sortSelect">
+        <option value="timestamp_desc">En Yeni</option>
+        <option value="timestamp_asc">En Eski</option>
+        <option value="rating_desc">En Yüksek Puan</option>
+        <option value="rating_asc">En Düşük Puan</option>
+      </select>
     </div>
+
+    <div class="comment-list" id="commentList"></div>
+    <div class="pagination" id="pagination"></div>
   </div>
+</section>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAyA9Wb5eETRMUFzpqPSWX4d-o9SjYZClk",
-      authDomain: "trs-yorumlar.firebaseapp.com",
-      projectId: "trs-yorumlar",
-      storageBucket: "trs-yorumlar.appspot.com",
-      messagingSenderId: "587642499585",
-      appId: "1:587642499585:web:5d07f7912249a77fdf8600"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+<div class="notify-overlay" id="notifyOverlay" aria-hidden="true">
+  <div class="notify" id="notifyBox">
+    <div class="close" id="notifyClose">×</div>
+    <div class="icon-wrap">
+      <div class="ring" id="ringAnim" style="display:none"></div>
+      <div class="icon" id="notifyIcon">✓</div>
+    </div>
+    <div class="text" id="notifyText">Başarıyla gönderildi.</div>
+    <div class="reason" id="notifyReason" style="display:none"></div>
+  </div>
+</div>
 
-    const notifyOverlay=document.getElementById('notifyOverlay'),
-    notifyBox=document.getElementById('notifyBox'),
-    notifyIcon=document.getElementById('notifyIcon'),
-    notifyText=document.getElementById('notifyText'),
-    notifyReason=document.getElementById('notifyReason'),
-    ringAnim=document.getElementById('ringAnim'),
-    notifyClose=document.getElementById('notifyClose');
-    function showNotify({type='success',title='',reason=''}){notifyBox.classList.remove('success','error');notifyBox.classList.add(type);if(type==='success'){notifyIcon.textContent='✓';notifyText.textContent=title||'Yorum başarıyla eklendi.';notifyReason.style.display='none';}else{notifyIcon.textContent='✕';notifyText.textContent=title||'Yorum gönderilemedi.';notifyReason.style.display='block';notifyReason.textContent=reason||'';}ringAnim.style.display='block';notifyOverlay.style.display='flex';setTimeout(()=>{ringAnim.style.display='none';},1600);}
-    notifyClose.onclick=()=>notifyOverlay.style.display='none';
+<!-- Silme onay modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3>Bu yorumu silmek istediğinize emin misiniz?</h3>
+    <button class="accept" id="confirmAccept">Kabul Ediyorum</button>
+    <button class="cancel" id="confirmCancel">Vazgeçiyorum</button>
+  </div>
+</div>
 
-    const BAD_WORDS=['siktir','orospu','piç','amcık','yarak','göt','fuck','shit','bitch'];
-    const escapeHtml=str=>String(str).replace(/[&<>"'\/]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;'}[s]));
-    const maskName=n=>{if(!n)return'';const p=n.split(' ');return p.map(x=>x[0].toUpperCase()+'*'.repeat(Math.max(3,x.length-1))).join(' ');}
-    const containsBadWord=t=>BAD_WORDS.some(w=>t.toLowerCase().includes(w));
+<div class="popup-overlay" id="popup">
+  <div class="popup">
+    <span class="close-btn" id="closePopup">×</span>
+    <h3>İletişim Seçiniz</h3>
+    <a href="#" id="phoneOption">📞 Telefonla Ara / WhatsApp</a>
+    <a href="#" id="gmailOption">📧 E-Posta Gönder</a>
+  </div>
+</div>
 
-    const commentForm=document.getElementById('commentForm'),
-          commentList=document.getElementById('commentList'),
-          pagination=document.getElementById('pagination'),
-          sortSelect=document.getElementById('sortSelect');
-    let commentsData=[],currentPage=1,perPage=10;
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAyA9Wb5eETRMUFzpqPSWX4d-o9SjYZClk",
+    authDomain: "trs-yorumlar.firebaseapp.com",
+    projectId: "trs-yorumlar",
+    storageBucket: "trs-yorumlar.appspot.com",
+    messagingSenderId: "587642499585",
+    appId: "1:587642499585:web:5d07f7912249a77fdf8600"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-    function renderComments(){
-      commentList.innerHTML='';
-      const start=(currentPage-1)*perPage;
-      const pageData=commentsData.slice(start,start+perPage);
-      pageData.forEach(d=>{
-        const item=document.createElement('div');
-        item.className='comment-item';
-        item.innerHTML=`<div class="meta"><div class="avatar">${escapeHtml(maskName(d.fullName)[0])}</div>
-        <div><div class="name">${escapeHtml(maskName(d.fullName))}</div><div class="rating">${'⭐'.repeat(d.rating)}</div></div></div>
-        <p>${escapeHtml(d.message)}</p>`;
-        commentList.appendChild(item);
-      });
-      renderPagination();
+  const notifyOverlay=document.getElementById('notifyOverlay'),
+        notifyBox=document.getElementById('notifyBox'),
+        notifyIcon=document.getElementById('notifyIcon'),
+        notifyText=document.getElementById('notifyText'),
+        notifyReason=document.getElementById('notifyReason'),
+        ringAnim=document.getElementById('ringAnim'),
+        notifyClose=document.getElementById('notifyClose');
+  function showNotify({type='success',title='',reason=''}){
+    notifyBox.classList.remove('success','error');
+    notifyBox.classList.add(type);
+    if(type==='success'){
+      notifyIcon.textContent='✓'; notifyText.textContent=title||'Yorum başarıyla eklendi.'; notifyReason.style.display='none';
+    } else {
+      notifyIcon.textContent='✕'; notifyText.textContent=title||'Yorum gönderilemedi.'; notifyReason.style.display='block'; notifyReason.textContent=reason||'';
     }
+    ringAnim.style.display='block'; notifyOverlay.style.display='flex';
+    setTimeout(()=>{ ringAnim.style.display='none'; },1600);
+  }
+  notifyClose.onclick=()=>notifyOverlay.style.display='none';
 
-    function renderPagination(){
-      pagination.innerHTML='';
-      const totalPages=Math.ceil(commentsData.length/perPage);
-      for(let i=1;i<=totalPages;i++){
-        const btn=document.createElement('button');
-        btn.textContent=i;
-        if(i===currentPage)btn.classList.add('active');
-        btn.onclick=()=>{currentPage=i;renderComments();}
-        pagination.appendChild(btn);
-      }
+  const BAD_WORDS=['siktir','orospu','piç','amcık','yarak','göt','fuck','shit','bitch'];
+  const escapeHtml=str=>String(str).replace(/[&<>"'\/]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;'}[s]));
+  const maskName=n=>{if(!n)return'';const p=n.split(' ');return p.map(x=>x[0].toUpperCase()+'*'.repeat(Math.max(3,x.length-1))).join(' ');}
+  const containsBadWord=t=>BAD_WORDS.some(w=>t.toLowerCase().includes(w));
+
+  const commentForm=document.getElementById('commentForm'),
+        commentList=document.getElementById('commentList'),
+        pagination=document.getElementById('pagination'),
+        sortSelect=document.getElementById('sortSelect'),
+        confirmOverlay=document.getElementById('confirmOverlay'),
+        confirmAccept=document.getElementById('confirmAccept'),
+        confirmCancel=document.getElementById('confirmCancel');
+
+  let commentsData=[],currentPage=1,perPage=10,deleteTargetId=null;
+  const currentUser='demoUser'; // burayı yorum yazan kişinin kimliğini Firestore kullanıcı ID ile eşleştirebilirsin
+
+  function renderComments(){
+    commentList.innerHTML='';
+    const start=(currentPage-1)*perPage;
+    const pageData=commentsData.slice(start,start+perPage);
+    pageData.forEach(d=>{
+      const item=document.createElement('div');
+      item.className='comment-item';
+      const isOwner=d.userId===currentUser || d.userId==='admin';
+      item.innerHTML=`<div class="meta"><div class="avatar">${escapeHtml(maskName(d.fullName)[0])}</div>
+      <div><div class="name">${escapeHtml(maskName(d.fullName))}</div><div class="rating">${'⭐'.repeat(d.rating)}</div></div></div>
+      <p>${escapeHtml(d.message)}</p>${isOwner?'<button class="delete-btn">Sil</button>':''}`;
+      if(isOwner)item.querySelector('.delete-btn').onclick=()=>{ deleteTargetId=d.id; confirmOverlay.style.display='flex'; }
+      commentList.appendChild(item);
+    });
+    renderPagination();
+  }
+
+  function renderPagination(){
+    pagination.innerHTML='';
+    const totalPages=Math.ceil(commentsData.length/perPage);
+    for(let i=1;i<=totalPages;i++){
+      const btn=document.createElement('button');
+      btn.textContent=i;
+      if(i===currentPage)btn.classList.add('active');
+      btn.onclick=()=>{currentPage=i;renderComments();}
+      pagination.appendChild(btn);
     }
+  }
 
-    function fetchComments(){
-      let order='timestamp',dir='desc';
-      const val=sortSelect.value;
-      if(val==='rating_desc'){order='rating';dir='desc';}
-      else if(val==='rating_asc'){order='rating';dir='asc';}
-      db.collection('comments').orderBy(order,dir).onSnapshot(snap=>{
-        commentsData=snap.docs.map(d=>d.data());
-        renderComments();
-      });
-    }
+  function fetchComments(){
+    let order='timestamp',dir='desc';
+    const val=sortSelect.value;
+    if(val==='rating_desc'){order='rating';dir='desc';}
+    else if(val==='rating_asc'){order='rating';dir='asc';}
+    else if(val==='timestamp_asc'){order='timestamp';dir='asc';}
+    db.collection('comments').orderBy(order,dir).onSnapshot(snap=>{
+      commentsData=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
+      renderComments();
+    });
+  }
 
-    fetchComments();
-    sortSelect.onchange=fetchComments;
+  sortSelect.onchange=fetchComments;
+  fetchComments();
 
-    commentForm.onsubmit=async e=>{
-      e.preventDefault();
-      const fullName=document.getElementById('fullName').value.trim(),
-            rating=parseInt(document.getElementById('rating').value),
-            message=document.getElementById('message').value.trim();
-      if(!fullName||!rating||!message){showNotify({type:'error',title:'Eksik bilgi',reason:'Tüm alanları doldurun.'});return;}
-      if(containsBadWord(message)||containsBadWord(fullName)){showNotify({type:'error',title:'Yorum reddedildi',reason:'Uygunsuz kelimeler tespit edildi.'});return;}
+  commentForm.onsubmit=async e=>{
+    e.preventDefault();
+    const fullName=document.getElementById('fullName').value.trim(),
+          rating=parseInt(document.getElementById('rating').value),
+          message=document.getElementById('message').value.trim();
+    if(!fullName||!rating||!message){showNotify({type:'error',title:'Eksik bilgi',reason:'Tüm alanları doldurun.'});return;}
+    if(containsBadWord(message)||containsBadWord(fullName)){showNotify({type:'error',title:'Yorum reddedildi',reason:'Uygunsuz kelimeler tespit edildi.'});return;}
+    try{
+      await db.collection('comments').add({fullName,rating,message,timestamp:firebase.firestore.FieldValue.serverTimestamp(),userId:currentUser});
+      showNotify({type:'success',title:'Teşekkürler! Yorum eklendi.'});
+      commentForm.reset();
+    }catch(err){showNotify({type:'error',title:'Hata',reason:'Yorum eklenemedi.'});}
+  }
+
+  confirmAccept.onclick=async ()=>{
+    if(deleteTargetId){
       try{
-        await db.collection('comments').add({fullName,rating,message,timestamp:firebase.firestore.FieldValue.serverTimestamp()});
-        showNotify({type:'success',title:'Teşekkürler! Yorum eklendi.'});
-        commentForm.reset();
-      }catch(err){showNotify({type:'error',title:'Hata',reason:'Yorum eklenemedi.'});}
+        await db.collection('comments').doc(deleteTargetId).delete();
+        confirmOverlay.style.display='none';
+        deleteTargetId=null;
+      }catch(err){showNotify({type:'error',title:'Hata',reason:'Yorum silinemedi.'});}
     }
-  </script>
+  }
+  confirmCancel.onclick=()=>{confirmOverlay.style.display='none'; deleteTargetId=null;}
+</script>
 </body>
 </html>
