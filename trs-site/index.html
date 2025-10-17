@@ -66,6 +66,23 @@
 </head>
 <body>
 
+<!-- Küçük ama önemli: sayfa yüklenince URL hash varsa temizle, ilk görünüm hero olsun -->
+<script>
+  // Eğer kullanıcı siteyi #yorumlar gibi bir hash ile açtıysa, bu otomatik atlamayı engellemek için hash'i kaldır.
+  // Ayrıca sayfa başına (0,0) kaydır.
+  (function(){
+    // hemen çalıştır
+    if(window.location.hash){
+      // replaceState ile hash'i kaldır (geri butonu davranışını bozmadan)
+      history.replaceState(null, document.title, window.location.pathname + window.location.search);
+      // kesin scroll top
+      try { window.scrollTo(0,0); } catch(e){}
+      // eski tarayıcılarda dosya hazır olunca da tekrar kontrol
+      window.addEventListener('DOMContentLoaded', () => { try { window.scrollTo(0,0); } catch(e){} });
+    }
+  })();
+</script>
+
 <header>
   <div class="container nav">
     <a href="#" class="brand"><img src="images/logo.png" alt="TRS Logo"><span>Güvenli Gelecek</span></a>
@@ -79,6 +96,28 @@
   </div>
 </header>
 
+<!-- (Hero / diğer bölümler burada olabilir; senin mevcut sayfanın diğer içeriklerini koru) -->
+<section id="hero" style="height:420px; display:grid; place-items:center; text-align:center;">
+  <div class="container">
+    <h1 style="font-size:2rem;color:var(--gold)">TRS — Güvenli Gelecek</h1>
+    <p style="color:var(--muted)">Ana sayfa içeriği buraya gelecek. Aşağıya kaydırarak yorumları görebilirsiniz.</p>
+  </div>
+</section>
+
+<!-- Örnek diğer bölümler (urunler/hakkimizda/iletisim) - gerçek kodun buradaysa koru -->
+<section id="urunler" style="padding:40px 0;">
+  <div class="container"><h2 style="color:var(--text)">Ürünler</h2></div>
+</section>
+
+<section id="hakkimizda" style="padding:40px 0;">
+  <div class="container"><h2 style="color:var(--text)">Hakkımızda</h2></div>
+</section>
+
+<section id="iletisim" style="padding:40px 0;">
+  <div class="container"><h2 style="color:var(--text)">İletişim</h2></div>
+</section>
+
+<!-- 💬 YORUMLAR -->
 <section class="comment-section" id="yorumlar">
   <div class="container">
     <h2>💬 Yorumlar</h2>
@@ -141,9 +180,11 @@
   </div>
 </div>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
+  // Firestore yapılandırman (senin verdiğin)
   const firebaseConfig = {
     apiKey: "AIzaSyAyA9Wb5eETRMUFzpqPSWX4d-o9SjYZClk",
     authDomain: "trs-yorumlar.firebaseapp.com",
@@ -155,6 +196,7 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
+  // Bildirim/uyarı elemanları
   const notifyOverlay=document.getElementById('notifyOverlay'),
         notifyBox=document.getElementById('notifyBox'),
         notifyIcon=document.getElementById('notifyIcon'),
@@ -162,6 +204,7 @@
         notifyReason=document.getElementById('notifyReason'),
         ringAnim=document.getElementById('ringAnim'),
         notifyClose=document.getElementById('notifyClose');
+
   function showNotify({type='success',title='',reason=''}){
     notifyBox.classList.remove('success','error');
     notifyBox.classList.add(type);
@@ -170,27 +213,47 @@
     } else {
       notifyIcon.textContent='✕'; notifyText.textContent=title||'Yorum gönderilemedi.'; notifyReason.style.display='block'; notifyReason.textContent=reason||'';
     }
-    ringAnim.style.display='block'; notifyOverlay.style.display='flex';
+    ringAnim.style.display='block'; notifyOverlay.style.display='flex'; notifyOverlay.setAttribute('aria-hidden','false');
     setTimeout(()=>{ ringAnim.style.display='none'; },1600);
   }
-  notifyClose.onclick=()=>notifyOverlay.style.display='none';
+  notifyClose.onclick = ()=> { notifyOverlay.style.display='none'; notifyOverlay.setAttribute('aria-hidden','true'); };
 
+  // Küfür filtresi ve yardımcı fonksiyonlar
   const BAD_WORDS=['siktir','orospu','piç','amcık','yarak','göt','fuck','shit','bitch'];
-  const escapeHtml=str=>String(str).replace(/[&<>"'\/]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;'}[s]));
-  const maskName=n=>{if(!n)return'';const p=n.split(' ');return p.map(x=>x[0].toUpperCase()+'*'.repeat(Math.max(3,x.length-1))).join(' ');}
-  const containsBadWord=t=>BAD_WORDS.some(w=>t.toLowerCase().includes(w));
+  const escapeHtml=str=>String(str||'').replace(/[&<>"'\/]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;'}[s]));
+  const maskName=n=>{ if(!n) return ''; const p=n.split(' '); return p.map(x=> (x && x[0]) ? x[0].toUpperCase()+'*'.repeat(Math.max(3,x.length-1)) : '' ).join(' '); }
+  const containsBadWord = t => { if(!t) return false; const s=t.toLowerCase(); return BAD_WORDS.some(w=> new RegExp('\\b'+w.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+'\\b','i').test(s)); };
 
+  // DOM elemanları ve state
   const commentForm=document.getElementById('commentForm'),
         commentList=document.getElementById('commentList'),
         pagination=document.getElementById('pagination'),
         sortSelect=document.getElementById('sortSelect'),
         confirmOverlay=document.getElementById('confirmOverlay'),
         confirmAccept=document.getElementById('confirmAccept'),
-        confirmCancel=document.getElementById('confirmCancel');
+        confirmCancel=document.getElementById('confirmCancel'),
+        popup=document.getElementById('popup'),
+        teklifBtn=document.getElementById('teklifBtn'),
+        closePopup=document.getElementById('closePopup'),
+        phoneOption=document.getElementById('phoneOption'),
+        gmailOption=document.getElementById('gmailOption');
 
-  let commentsData=[],currentPage=1,perPage=10,deleteTargetId=null;
-  const currentUser='demoUser'; // burayı yorum yazan kişinin kimliğini Firestore kullanıcı ID ile eşleştirebilirsin
+  let commentsData=[], currentPage=1, perPage=10, deleteTargetId=null;
+  const currentUser='demoUser'; // gerçek kullanımda auth uid ile değiştir
 
+  // Popup teklif al
+  teklifBtn && teklifBtn.addEventListener('click', e=>{ e.preventDefault(); popup.style.display='flex'; document.body.style.overflow='hidden'; });
+  closePopup && closePopup.addEventListener('click', ()=>{ popup.style.display='none'; document.body.style.overflow='auto'; });
+  popup && popup.addEventListener('click', e=>{ if(e.target===popup){ popup.style.display='none'; document.body.style.overflow='auto'; }});
+  function isMobileDevice(){ return /Mobi|Android|iPhone|iPad|IEMobile|Opera Mini/i.test(navigator.userAgent); }
+  const businessPhone = "+905510979299";
+  const whatsappNumber = "905510979299";
+  const whatsappPrefill = encodeURIComponent("Merhaba TRS, teklif almak istiyorum. (Site üzerinden geldim.)");
+  phoneOption && phoneOption.addEventListener('click', e=>{ e.preventDefault(); if(isMobileDevice()){ window.location.href = "tel:" + businessPhone; } else { window.open("https://web.whatsapp.com/send?phone="+whatsappNumber+"&text="+whatsappPrefill,"_blank"); } popup.style.display='none'; document.body.style.overflow='auto'; });
+  const gmailLink = "https://mail.google.com/mail/?view=cm&fs=1&to=trsturkeyofficial@gmail.com&su=Teklif%20Talebi&body=Merhaba%20TRS,%20bir%20teklif%20almak%20istiyorum.";
+  gmailOption && gmailOption.addEventListener('click', e=>{ e.preventDefault(); window.open(gmailLink,"_blank"); popup.style.display='none'; document.body.style.overflow='auto'; });
+
+  // Render / pagination
   function renderComments(){
     commentList.innerHTML='';
     const start=(currentPage-1)*perPage;
@@ -198,11 +261,23 @@
     pageData.forEach(d=>{
       const item=document.createElement('div');
       item.className='comment-item';
-      const isOwner=d.userId===currentUser || d.userId==='admin';
-      item.innerHTML=`<div class="meta"><div class="avatar">${escapeHtml(maskName(d.fullName)[0])}</div>
-      <div><div class="name">${escapeHtml(maskName(d.fullName))}</div><div class="rating">${'⭐'.repeat(d.rating)}</div></div></div>
-      <p>${escapeHtml(d.message)}</p>${isOwner?'<button class="delete-btn">Sil</button>':''}`;
-      if(isOwner)item.querySelector('.delete-btn').onclick=()=>{ deleteTargetId=d.id; confirmOverlay.style.display='flex'; }
+      const isOwner = (d.userId === currentUser) || (d.userId === 'admin');
+      const avatarChar = escapeHtml((maskName(d.fullName)||'').charAt(0) || '');
+      item.innerHTML = `
+        <div class="meta">
+          <div class="avatar">${avatarChar}</div>
+          <div>
+            <div class="name">${escapeHtml(maskName(d.fullName))}</div>
+            <div class="rating">${'⭐'.repeat(d.rating || 0)}</div>
+          </div>
+        </div>
+        <p>${escapeHtml(d.message)}</p>
+        ${isOwner ? '<button class="delete-btn">Sil</button>' : ''}
+      `;
+      if(isOwner){
+        const delBtn = item.querySelector('.delete-btn');
+        delBtn.addEventListener('click', ()=>{ deleteTargetId = d.id; confirmOverlay.style.display='flex'; });
+      }
       commentList.appendChild(item);
     });
     renderPagination();
@@ -210,55 +285,99 @@
 
   function renderPagination(){
     pagination.innerHTML='';
-    const totalPages=Math.ceil(commentsData.length/perPage);
+    const totalPages = Math.max(1, Math.ceil(commentsData.length / perPage));
     for(let i=1;i<=totalPages;i++){
-      const btn=document.createElement('button');
-      btn.textContent=i;
-      if(i===currentPage)btn.classList.add('active');
-      btn.onclick=()=>{currentPage=i;renderComments();}
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      if(i===currentPage) btn.classList.add('active');
+      btn.addEventListener('click', ()=> { currentPage = i; renderComments(); window.scrollTo({top: document.querySelector('#yorumlar').offsetTop - 20, behavior:'smooth'}); });
       pagination.appendChild(btn);
     }
   }
 
+  // Firestore realtime fetch + sorting
   function fetchComments(){
-    let order='timestamp',dir='desc';
-    const val=sortSelect.value;
-    if(val==='rating_desc'){order='rating';dir='desc';}
-    else if(val==='rating_asc'){order='rating';dir='asc';}
-    else if(val==='timestamp_asc'){order='timestamp';dir='asc';}
-    db.collection('comments').orderBy(order,dir).onSnapshot(snap=>{
-      commentsData=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
-      renderComments();
-    });
-  }
+    // seçime göre sorgu hazırlanıyor
+    let orderField = 'timestamp';
+    let dir = 'desc';
+    const val = sortSelect.value;
+    if(val === 'rating_desc'){ orderField = 'rating'; dir = 'desc'; }
+    else if(val === 'rating_asc'){ orderField = 'rating'; dir = 'asc'; }
+    else if(val === 'timestamp_asc'){ orderField = 'timestamp'; dir = 'asc'; }
 
-  sortSelect.onchange=fetchComments;
-  fetchComments();
-
-  commentForm.onsubmit=async e=>{
-    e.preventDefault();
-    const fullName=document.getElementById('fullName').value.trim(),
-          rating=parseInt(document.getElementById('rating').value),
-          message=document.getElementById('message').value.trim();
-    if(!fullName||!rating||!message){showNotify({type:'error',title:'Eksik bilgi',reason:'Tüm alanları doldurun.'});return;}
-    if(containsBadWord(message)||containsBadWord(fullName)){showNotify({type:'error',title:'Yorum reddedildi',reason:'Uygunsuz kelimeler tespit edildi.'});return;}
-    try{
-      await db.collection('comments').add({fullName,rating,message,timestamp:firebase.firestore.FieldValue.serverTimestamp(),userId:currentUser});
-      showNotify({type:'success',title:'Teşekkürler! Yorum eklendi.'});
-      commentForm.reset();
-    }catch(err){showNotify({type:'error',title:'Hata',reason:'Yorum eklenemedi.'});}
-  }
-
-  confirmAccept.onclick=async ()=>{
-    if(deleteTargetId){
-      try{
-        await db.collection('comments').doc(deleteTargetId).delete();
-        confirmOverlay.style.display='none';
-        deleteTargetId=null;
-      }catch(err){showNotify({type:'error',title:'Hata',reason:'Yorum silinemedi.'});}
+    // onSnapshot ile realtime dinleme
+    try {
+      db.collection('comments').orderBy(orderField, dir).onSnapshot(snap => {
+        commentsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        currentPage = 1; // sıralama değişince sayfayı 1'e al (isteğe göre değiştirilebilir)
+        renderComments();
+      }, err => {
+        console.error('Firestore snapshot error:', err);
+        // hata durumunda commentsData'yı temizlemeyiz; kullanıcıya gösterilebilir hata yapabilirsin
+      });
+    } catch(e){
+      console.error('fetchComments error', e);
     }
   }
-  confirmCancel.onclick=()=>{confirmOverlay.style.display='none'; deleteTargetId=null;}
+  sortSelect && (sortSelect.onchange = ()=> { fetchComments(); });
+
+  // Başlat
+  fetchComments();
+
+  // Form gönderimi
+  commentForm && (commentForm.onsubmit = async e => {
+    e.preventDefault();
+    const fullName = (document.getElementById('fullName').value || '').trim();
+    const rating = parseInt(document.getElementById('rating').value || '0', 10);
+    const message = (document.getElementById('message').value || '').trim();
+
+    if(!fullName || !rating || !message){
+      showNotify({type:'error', title:'Eksik bilgi', reason:'Tüm alanları doldurun.'});
+      return;
+    }
+    if(containsBadWord(message) || containsBadWord(fullName)){
+      showNotify({type:'error', title:'Yorum reddedildi', reason:'Uygunsuz kelimeler tespit edildi.'});
+      return;
+    }
+
+    try{
+      await db.collection('comments').add({
+        fullName,
+        rating,
+        message,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        userId: currentUser
+      });
+      showNotify({type:'success', title:'Teşekkürler! Yorum eklendi.'});
+      commentForm.reset();
+      // onSnapshot otomatik güncelleyecek
+    } catch(err){
+      console.error('add comment error', err);
+      showNotify({type:'error', title:'Hata', reason:'Yorum eklenemedi.'});
+    }
+  });
+
+  // Silme onayı
+  confirmAccept && (confirmAccept.onclick = async () => {
+    if(!deleteTargetId) { confirmOverlay.style.display='none'; return; }
+    try{
+      await db.collection('comments').doc(deleteTargetId).delete();
+      confirmOverlay.style.display='none';
+      deleteTargetId = null;
+    } catch(err){
+      console.error('delete error', err);
+      showNotify({type:'error', title:'Hata', reason:'Yorum silinemedi.'});
+    }
+  });
+  confirmCancel && (confirmCancel.onclick = () => { confirmOverlay.style.display='none'; deleteTargetId = null; });
+
+  // Sayfa açıldığında: eğer URL hash yoksa hero görünür (ilk script zaten hash'ı temizledi).
+  // Eğer kullanıcı doğrudan #yorumlar ile gelmiş olursa tarayıcı eski davranışından dolayı atlamış olabilir, ama biz hash'i kaldırdık.
+
+  // Güvenlik: onSnapshot çalışmıyorsa konsola bak. Eğer sayfan "ana sayfa görünmüyor" diyorsan:
+  // - Netlify/hosting tarafında yönlendirme/hash yok mu kontrol et.
+  // - Konsolda hata varsa bana ilet (API key/Firestore rules vb.).
+
 </script>
 </body>
 </html>
