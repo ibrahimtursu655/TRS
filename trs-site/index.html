@@ -2,11 +2,14 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TRS — Güvenli Gelecek</title>
   <link rel="icon" type="image/png" href="images/favicon.png">
 
   <style>
-    :root{--bg:#0a0a0a;--text:#e7e7e7;--muted:#a9a9a9;--gold:#d4af37;--accent:#00d8ff;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.45)}
+    :root{
+      --bg:#0a0a0a;--text:#e7e7e7;--muted:#a9a9a9;--gold:#d4af37;--accent:#00d8ff;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.45)
+    }
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:var(--bg);color:var(--text);font-family:Poppins,sans-serif;line-height:1.6;overflow-x:hidden}
     .container{max-width:1200px;margin:0 auto;padding:0 20px}
@@ -20,14 +23,16 @@
     nav a:hover:after{width:100%}
     .cta{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:999px;text-decoration:none;background:linear-gradient(135deg,var(--gold),#b58913);color:#111;font-weight:800;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.15)}
 
+    section{padding:60px 0}
+    h1,h2,h3{margin-bottom:20px}
+    a{cursor:pointer}
+
     /* Yorumlar */
-    .comment-section{padding:70px 0;border-top:1px solid rgba(255,255,255,0.1)}
-    .comment-section h2{text-align:center;color:var(--gold);margin-bottom:20px}
+    .comment-section{border-top:1px solid rgba(255,255,255,0.1)}
     .comment-form{display:flex;flex-direction:column;gap:10px;max-width:600px;margin:0 auto}
     .comment-form input,.comment-form textarea,.comment-form select{padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.08);color:#fff}
-    .comment-form button{align-self:flex-end;padding:10px 18px;border-radius:10px}
+    .comment-form button{align-self:flex-end;padding:10px 18px;border-radius:10px;background:var(--gold);color:#111;font-weight:700;border:none;cursor:pointer}
     .comment-controls{max-width:800px;margin:20px auto;text-align:right}
-    .comment-controls select{padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.08);color:#fff;border:none;}
     .comment-list{max-width:800px;margin:20px auto 0;display:grid;gap:12px}
     .comment-item{background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;position:relative}
     .comment-item .meta{display:flex;align-items:center;gap:12px;margin-bottom:8px}
@@ -41,47 +46,19 @@
     .pagination button{margin:0 5px;padding:8px 14px;border:none;border-radius:8px;background:rgba(255,255,255,0.08);color:#fff;cursor:pointer}
     .pagination button.active{background:var(--gold);color:#111;font-weight:700}
 
-    /* Bildirim modal */
+    /* Modallar */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:4000;align-items:center;justify-content:center}
+    .box{background:#111;padding:24px;border-radius:12px;max-width:400px;text-align:center;color:#fff}
+    .box h3{margin-bottom:20px;color:var(--gold)}
+    .box button{margin:0 10px;padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+    .accept{background:var(--gold);color:#111}
+    .cancel{background:rgba(255,255,255,0.08);color:#fff}
     .notify-overlay{display:none;position:fixed;inset:0;backdrop-filter:blur(6px);background:rgba(0,0,0,0.45);z-index:3000;align-items:center;justify-content:center}
     .notify{background:#0f0f0f;padding:28px;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.6);text-align:center;color:#fff;max-width:420px;position:relative}
     .notify .close{position:absolute;right:12px;top:10px;color:#fff;font-size:20px;cursor:pointer}
-    .notify .icon-wrap{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;position:relative}
-    .notify.success .icon-wrap{background:conic-gradient(from 0deg, rgba(0,200,0,.15) 0, transparent 0);border:4px solid rgba(0,200,0,0.12)}
-    .notify.success .icon{width:60px;height:60px;border-radius:50%;background:#0f0;padding:10px;display:flex;align-items:center;justify-content:center;color:#063}
-    .notify.error .icon-wrap{background:conic-gradient(from 0deg, rgba(255,0,0,.12) 0, transparent 0);border:4px solid rgba(255,0,0,0.12)}
-    .notify.error .icon{width:60px;height:60px;border-radius:50%;background:#f00;padding:10px;display:flex;align-items:center;justify-content:center;color:#fff}
-    .ring { position:absolute; inset: -12px; border-radius:50%; border:3px solid rgba(255,255,255,0.06); animation:spin 1.2s linear; }
-    @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-    .notify .text{margin-top:8px;color:#fff}
-    .notify .reason{margin-top:10px;color:#ffd6d6;font-size:0.95rem}
-
-    /* Silme onay modal */
-    .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:4000;align-items:center;justify-content:center}
-    .confirm-box{background:#111;padding:24px;border-radius:12px;max-width:400px;text-align:center;color:#fff}
-    .confirm-box h3{margin-bottom:20px;color:var(--gold)}
-    .confirm-box button{margin:0 10px;padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600}
-    .confirm-box .accept{background:var(--gold);color:#111}
-    .confirm-box .cancel{background:rgba(255,255,255,0.08);color:#fff}
   </style>
 </head>
 <body>
-
-<!-- Küçük ama önemli: sayfa yüklenince URL hash varsa temizle, ilk görünüm hero olsun -->
-<script>
-  // Eğer kullanıcı siteyi #yorumlar gibi bir hash ile açtıysa, bu otomatik atlamayı engellemek için hash'i kaldır.
-  // Ayrıca sayfa başına (0,0) kaydır.
-  (function(){
-    // hemen çalıştır
-    if(window.location.hash){
-      // replaceState ile hash'i kaldır (geri butonu davranışını bozmadan)
-      history.replaceState(null, document.title, window.location.pathname + window.location.search);
-      // kesin scroll top
-      try { window.scrollTo(0,0); } catch(e){}
-      // eski tarayıcılarda dosya hazır olunca da tekrar kontrol
-      window.addEventListener('DOMContentLoaded', () => { try { window.scrollTo(0,0); } catch(e){} });
-    }
-  })();
-</script>
 
 <header>
   <div class="container nav">
@@ -91,12 +68,11 @@
       <a href="#urunler">Ürünler</a>
       <a href="#hakkimizda">Hakkımızda</a>
       <a href="#iletisim">İletişim</a>
-      <a class="cta" href="#" id="teklifBtn">Teklif Al</a>
+      <a class="cta" id="teklifBtn">Teklif Al</a>
     </nav>
   </div>
 </header>
 
-<!-- (Hero / diğer bölümler burada olabilir; senin mevcut sayfanın diğer içeriklerini koru) -->
 <section id="hero" style="height:420px; display:grid; place-items:center; text-align:center;">
   <div class="container">
     <h1 style="font-size:2rem;color:var(--gold)">TRS — Güvenli Gelecek</h1>
@@ -104,25 +80,23 @@
   </div>
 </section>
 
-<!-- Örnek diğer bölümler (urunler/hakkimizda/iletisim) - gerçek kodun buradaysa koru -->
-<section id="urunler" style="padding:40px 0;">
-  <div class="container"><h2 style="color:var(--text)">Ürünler</h2></div>
+<section id="urunler">
+  <div class="container"><h2>Ürünler</h2></div>
 </section>
 
-<section id="hakkimizda" style="padding:40px 0;">
-  <div class="container"><h2 style="color:var(--text)">Hakkımızda</h2></div>
+<section id="hakkimizda">
+  <div class="container"><h2>Hakkımızda</h2></div>
 </section>
 
-<section id="iletisim" style="padding:40px 0;">
-  <div class="container"><h2 style="color:var(--text)">İletişim</h2></div>
+<section id="iletisim">
+  <div class="container"><h2>İletişim</h2></div>
 </section>
 
-<!-- 💬 YORUMLAR -->
 <section class="comment-section" id="yorumlar">
   <div class="container">
     <h2>💬 Yorumlar</h2>
     <form class="comment-form" id="commentForm">
-      <input type="text" id="fullName" placeholder="Adınız Soyadınız (ör: Ahmet Yılmaz)" required>
+      <input type="text" id="fullName" placeholder="Adınız Soyadınız" required>
       <select id="rating" required>
         <option value="" disabled selected>Puan verin</option>
         <option value="1">1 — ⭐</option>
@@ -134,7 +108,6 @@
       <textarea id="message" placeholder="Yorumunuz..." required rows="5"></textarea>
       <button type="submit">Gönder</button>
     </form>
-
     <div class="comment-controls">
       <label for="sortSelect">Sırala: </label>
       <select id="sortSelect">
@@ -144,87 +117,42 @@
         <option value="rating_asc">En Düşük Puan</option>
       </select>
     </div>
-
     <div class="comment-list" id="commentList"></div>
     <div class="pagination" id="pagination"></div>
   </div>
 </section>
 
-<div class="notify-overlay" id="notifyOverlay" aria-hidden="true">
+<div class="notify-overlay" id="notifyOverlay">
   <div class="notify" id="notifyBox">
     <div class="close" id="notifyClose">×</div>
-    <div class="icon-wrap">
-      <div class="ring" id="ringAnim" style="display:none"></div>
-      <div class="icon" id="notifyIcon">✓</div>
-    </div>
     <div class="text" id="notifyText">Başarıyla gönderildi.</div>
-    <div class="reason" id="notifyReason" style="display:none"></div>
   </div>
 </div>
 
-<!-- Silme onay modal -->
-<div class="confirm-overlay" id="confirmOverlay">
-  <div class="confirm-box">
+<div class="overlay" id="confirmOverlay">
+  <div class="box">
     <h3>Bu yorumu silmek istediğinize emin misiniz?</h3>
     <button class="accept" id="confirmAccept">Kabul Ediyorum</button>
     <button class="cancel" id="confirmCancel">Vazgeçiyorum</button>
   </div>
 </div>
 
-<div class="popup-overlay" id="popup">
-  <div class="popup">
+<div class="overlay" id="popup">
+  <div class="box">
     <span class="close-btn" id="closePopup">×</span>
     <h3>İletişim Seçiniz</h3>
-    <a href="#" id="phoneOption">📞 Telefonla Ara / WhatsApp</a>
-    <a href="#" id="gmailOption">📧 E-Posta Gönder</a>
+    <a id="phoneOption">📞 Telefonla Ara / WhatsApp</a><br>
+    <a id="gmailOption">📧 E-Posta Gönder</a>
   </div>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-  // Firestore yapılandırman (senin verdiğin)
-  const firebaseConfig = {
-    apiKey: "AIzaSyAyA9Wb5eETRMUFzpqPSWX4d-o9SjYZClk",
-    authDomain: "trs-yorumlar.firebaseapp.com",
-    projectId: "trs-yorumlar",
-    storageBucket: "trs-yorumlar.appspot.com",
-    messagingSenderId: "587642499585",
-    appId: "1:587642499585:web:5d07f7912249a77fdf8600"
-  };
+  const firebaseConfig = { apiKey:"AIzaSyAyA9Wb5eETRMUFzpqPSWX4d-o9SjYZClk", authDomain:"trs-yorumlar.firebaseapp.com", projectId:"trs-yorumlar", storageBucket:"trs-yorumlar.appspot.com", messagingSenderId:"587642499585", appId:"1:587642499585:web:5d07f7912249a77fdf8600" };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Bildirim/uyarı elemanları
-  const notifyOverlay=document.getElementById('notifyOverlay'),
-        notifyBox=document.getElementById('notifyBox'),
-        notifyIcon=document.getElementById('notifyIcon'),
-        notifyText=document.getElementById('notifyText'),
-        notifyReason=document.getElementById('notifyReason'),
-        ringAnim=document.getElementById('ringAnim'),
-        notifyClose=document.getElementById('notifyClose');
-
-  function showNotify({type='success',title='',reason=''}){
-    notifyBox.classList.remove('success','error');
-    notifyBox.classList.add(type);
-    if(type==='success'){
-      notifyIcon.textContent='✓'; notifyText.textContent=title||'Yorum başarıyla eklendi.'; notifyReason.style.display='none';
-    } else {
-      notifyIcon.textContent='✕'; notifyText.textContent=title||'Yorum gönderilemedi.'; notifyReason.style.display='block'; notifyReason.textContent=reason||'';
-    }
-    ringAnim.style.display='block'; notifyOverlay.style.display='flex'; notifyOverlay.setAttribute('aria-hidden','false');
-    setTimeout(()=>{ ringAnim.style.display='none'; },1600);
-  }
-  notifyClose.onclick = ()=> { notifyOverlay.style.display='none'; notifyOverlay.setAttribute('aria-hidden','true'); };
-
-  // Küfür filtresi ve yardımcı fonksiyonlar
-  const BAD_WORDS=['siktir','orospu','piç','amcık','yarak','göt','fuck','shit','bitch'];
-  const escapeHtml=str=>String(str||'').replace(/[&<>"'\/]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;'}[s]));
-  const maskName=n=>{ if(!n) return ''; const p=n.split(' '); return p.map(x=> (x && x[0]) ? x[0].toUpperCase()+'*'.repeat(Math.max(3,x.length-1)) : '' ).join(' '); }
-  const containsBadWord = t => { if(!t) return false; const s=t.toLowerCase(); return BAD_WORDS.some(w=> new RegExp('\\b'+w.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+'\\b','i').test(s)); };
-
-  // DOM elemanları ve state
   const commentForm=document.getElementById('commentForm'),
         commentList=document.getElementById('commentList'),
         pagination=document.getElementById('pagination'),
@@ -236,47 +164,48 @@
         teklifBtn=document.getElementById('teklifBtn'),
         closePopup=document.getElementById('closePopup'),
         phoneOption=document.getElementById('phoneOption'),
-        gmailOption=document.getElementById('gmailOption');
+        gmailOption=document.getElementById('gmailOption'),
+        notifyOverlay=document.getElementById('notifyOverlay'),
+        notifyClose=document.getElementById('notifyClose'),
+        notifyBox=document.getElementById('notifyBox'),
+        notifyText=document.getElementById('notifyText');
 
+  const BAD_WORDS=['siktir','orospu','piç','amcık','yarak','göt','fuck','shit','bitch'];
+  const currentUser='demoUser';
   let commentsData=[], currentPage=1, perPage=10, deleteTargetId=null;
-  const currentUser='demoUser'; // gerçek kullanımda auth uid ile değiştir
 
-  // Popup teklif al
-  teklifBtn && teklifBtn.addEventListener('click', e=>{ e.preventDefault(); popup.style.display='flex'; document.body.style.overflow='hidden'; });
-  closePopup && closePopup.addEventListener('click', ()=>{ popup.style.display='none'; document.body.style.overflow='auto'; });
-  popup && popup.addEventListener('click', e=>{ if(e.target===popup){ popup.style.display='none'; document.body.style.overflow='auto'; }});
-  function isMobileDevice(){ return /Mobi|Android|iPhone|iPad|IEMobile|Opera Mini/i.test(navigator.userAgent); }
-  const businessPhone = "+905510979299";
-  const whatsappNumber = "905510979299";
-  const whatsappPrefill = encodeURIComponent("Merhaba TRS, teklif almak istiyorum. (Site üzerinden geldim.)");
-  phoneOption && phoneOption.addEventListener('click', e=>{ e.preventDefault(); if(isMobileDevice()){ window.location.href = "tel:" + businessPhone; } else { window.open("https://web.whatsapp.com/send?phone="+whatsappNumber+"&text="+whatsappPrefill,"_blank"); } popup.style.display='none'; document.body.style.overflow='auto'; });
-  const gmailLink = "https://mail.google.com/mail/?view=cm&fs=1&to=trsturkeyofficial@gmail.com&su=Teklif%20Talebi&body=Merhaba%20TRS,%20bir%20teklif%20almak%20istiyorum.";
-  gmailOption && gmailOption.addEventListener('click', e=>{ e.preventDefault(); window.open(gmailLink,"_blank"); popup.style.display='none'; document.body.style.overflow='auto'; });
+  function escapeHtml(str){return String(str||'').replace(/[&<>"'\/]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;'}[s]));}
+  function maskName(n){if(!n) return ''; const p=n.split(' '); return p.map(x=> (x && x[0]) ? x[0].toUpperCase()+'*'.repeat(Math.max(3,x.length-1)) : '' ).join(' '); }
+  function containsBadWord(t){if(!t) return false; const s=t.toLowerCase(); return BAD_WORDS.some(w=> new RegExp('\\b'+w.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+'\\b','i').test(s));}
+  function showNotify({type='success',title='',reason=''}){
+    notifyBox.style.background = (type==='success') ? '#0f0f0f' : '#f00';
+    notifyText.textContent = title;
+    notifyOverlay.style.display='flex';
+  }
+  notifyClose.onclick = ()=>{ notifyOverlay.style.display='none'; };
 
-  // Render / pagination
   function renderComments(){
     commentList.innerHTML='';
     const start=(currentPage-1)*perPage;
     const pageData=commentsData.slice(start,start+perPage);
     pageData.forEach(d=>{
-      const item=document.createElement('div');
-      item.className='comment-item';
-      const isOwner = (d.userId === currentUser) || (d.userId === 'admin');
-      const avatarChar = escapeHtml((maskName(d.fullName)||'').charAt(0) || '');
-      item.innerHTML = `
+      const item=document.createElement('div'); item.className='comment-item';
+      const isOwner=(d.userId===currentUser)||(d.userId==='admin');
+      const avatarChar=escapeHtml((maskName(d.fullName)||'').charAt(0)||'');
+      item.innerHTML=`
         <div class="meta">
           <div class="avatar">${avatarChar}</div>
           <div>
             <div class="name">${escapeHtml(maskName(d.fullName))}</div>
-            <div class="rating">${'⭐'.repeat(d.rating || 0)}</div>
+            <div class="rating">${'⭐'.repeat(d.rating||0)}</div>
           </div>
         </div>
         <p>${escapeHtml(d.message)}</p>
-        ${isOwner ? '<button class="delete-btn">Sil</button>' : ''}
+        ${isOwner?'<button class="delete-btn">Sil</button>':''}
       `;
       if(isOwner){
-        const delBtn = item.querySelector('.delete-btn');
-        delBtn.addEventListener('click', ()=>{ deleteTargetId = d.id; confirmOverlay.style.display='flex'; });
+        const delBtn=item.querySelector('.delete-btn');
+        delBtn.addEventListener('click',()=>{ deleteTargetId=d.id; confirmOverlay.style.display='flex'; });
       }
       commentList.appendChild(item);
     });
@@ -285,99 +214,57 @@
 
   function renderPagination(){
     pagination.innerHTML='';
-    const totalPages = Math.max(1, Math.ceil(commentsData.length / perPage));
+    const totalPages=Math.max(1,Math.ceil(commentsData.length/perPage));
     for(let i=1;i<=totalPages;i++){
-      const btn = document.createElement('button');
-      btn.textContent = i;
+      const btn=document.createElement('button'); btn.textContent=i;
       if(i===currentPage) btn.classList.add('active');
-      btn.addEventListener('click', ()=> { currentPage = i; renderComments(); window.scrollTo({top: document.querySelector('#yorumlar').offsetTop - 20, behavior:'smooth'}); });
+      btn.addEventListener('click',()=>{currentPage=i; renderComments();});
       pagination.appendChild(btn);
     }
   }
 
-  // Firestore realtime fetch + sorting
   function fetchComments(){
-    // seçime göre sorgu hazırlanıyor
-    let orderField = 'timestamp';
-    let dir = 'desc';
-    const val = sortSelect.value;
-    if(val === 'rating_desc'){ orderField = 'rating'; dir = 'desc'; }
-    else if(val === 'rating_asc'){ orderField = 'rating'; dir = 'asc'; }
-    else if(val === 'timestamp_asc'){ orderField = 'timestamp'; dir = 'asc'; }
-
-    // onSnapshot ile realtime dinleme
-    try {
-      db.collection('comments').orderBy(orderField, dir).onSnapshot(snap => {
-        commentsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        currentPage = 1; // sıralama değişince sayfayı 1'e al (isteğe göre değiştirilebilir)
-        renderComments();
-      }, err => {
-        console.error('Firestore snapshot error:', err);
-        // hata durumunda commentsData'yı temizlemeyiz; kullanıcıya gösterilebilir hata yapabilirsin
-      });
-    } catch(e){
-      console.error('fetchComments error', e);
-    }
+    let orderField='timestamp', dir='desc';
+    const val=sortSelect.value;
+    if(val==='rating_desc'){orderField='rating'; dir='desc';} 
+    else if(val==='rating_asc'){orderField='rating'; dir='asc';} 
+    else if(val==='timestamp_asc'){dir='asc';}
+    db.collection('comments').orderBy(orderField,dir).onSnapshot(snap=>{
+      commentsData=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
+      currentPage=1;
+      renderComments();
+    });
   }
-  sortSelect && (sortSelect.onchange = ()=> { fetchComments(); });
 
-  // Başlat
+  sortSelect.onchange = ()=>{ fetchComments(); }
   fetchComments();
 
-  // Form gönderimi
-  commentForm && (commentForm.onsubmit = async e => {
+  commentForm.onsubmit=async e=>{
     e.preventDefault();
-    const fullName = (document.getElementById('fullName').value || '').trim();
-    const rating = parseInt(document.getElementById('rating').value || '0', 10);
-    const message = (document.getElementById('message').value || '').trim();
-
-    if(!fullName || !rating || !message){
-      showNotify({type:'error', title:'Eksik bilgi', reason:'Tüm alanları doldurun.'});
-      return;
-    }
-    if(containsBadWord(message) || containsBadWord(fullName)){
-      showNotify({type:'error', title:'Yorum reddedildi', reason:'Uygunsuz kelimeler tespit edildi.'});
-      return;
-    }
-
+    const fullName=document.getElementById('fullName').value.trim();
+    const rating=parseInt(document.getElementById('rating').value||'0',10);
+    const message=document.getElementById('message').value.trim();
+    if(!fullName||!rating||!message){ showNotify({type:'error',title:'Tüm alanları doldurun'}); return;}
+    if(containsBadWord(fullName)||containsBadWord(message)){ showNotify({type:'error',title:'Uygunsuz kelime tespit edildi'}); return;}
     try{
-      await db.collection('comments').add({
-        fullName,
-        rating,
-        message,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        userId: currentUser
-      });
-      showNotify({type:'success', title:'Teşekkürler! Yorum eklendi.'});
+      await db.collection('comments').add({fullName,rating,message,timestamp:firebase.firestore.FieldValue.serverTimestamp(),userId:currentUser});
+      showNotify({type:'success',title:'Yorum eklendi'});
       commentForm.reset();
-      // onSnapshot otomatik güncelleyecek
-    } catch(err){
-      console.error('add comment error', err);
-      showNotify({type:'error', title:'Hata', reason:'Yorum eklenemedi.'});
-    }
-  });
+    }catch(err){showNotify({type:'error',title:'Yorum eklenemedi'});}
+  }
 
-  // Silme onayı
-  confirmAccept && (confirmAccept.onclick = async () => {
-    if(!deleteTargetId) { confirmOverlay.style.display='none'; return; }
-    try{
-      await db.collection('comments').doc(deleteTargetId).delete();
-      confirmOverlay.style.display='none';
-      deleteTargetId = null;
-    } catch(err){
-      console.error('delete error', err);
-      showNotify({type:'error', title:'Hata', reason:'Yorum silinemedi.'});
-    }
-  });
-  confirmCancel && (confirmCancel.onclick = () => { confirmOverlay.style.display='none'; deleteTargetId = null; });
+  confirmAccept.onclick=async()=>{if(!deleteTargetId){confirmOverlay.style.display='none';return;} try{await db.collection('comments').doc(deleteTargetId).delete(); confirmOverlay.style.display='none'; deleteTargetId=null;}catch(err){showNotify({type:'error',title:'Silinemedi'});}}
+  confirmCancel.onclick=()=>{confirmOverlay.style.display='none'; deleteTargetId=null;}
 
-  // Sayfa açıldığında: eğer URL hash yoksa hero görünür (ilk script zaten hash'ı temizledi).
-  // Eğer kullanıcı doğrudan #yorumlar ile gelmiş olursa tarayıcı eski davranışından dolayı atlamış olabilir, ama biz hash'i kaldırdık.
-
-  // Güvenlik: onSnapshot çalışmıyorsa konsola bak. Eğer sayfan "ana sayfa görünmüyor" diyorsan:
-  // - Netlify/hosting tarafında yönlendirme/hash yok mu kontrol et.
-  // - Konsolda hata varsa bana ilet (API key/Firestore rules vb.).
-
+  // Popup
+  teklifBtn.onclick=e=>{e.preventDefault(); popup.style.display='flex'; document.body.style.overflow='hidden';}
+  closePopup.onclick=()=>{popup.style.display='none'; document.body.style.overflow='auto';}
+  popup.onclick=e=>{if(e.target===popup){popup.style.display='none';document.body.style.overflow='auto';}}
+  function isMobile(){return /Mobi|Android|iPhone|iPad|IEMobile|Opera Mini/i.test(navigator.userAgent);}
+  const phone="+905510979299", whatsapp="905510979299", wpText=encodeURIComponent("Merhaba TRS, teklif almak istiyorum.");
+  phoneOption.onclick=e=>{e.preventDefault(); if(isMobile()){window.location.href="tel:"+phone;} else {window.open("https://web.whatsapp.com/send?phone="+whatsapp+"&text="+wpText,"_blank");} popup.style.display='none'; document.body.style.overflow='auto';}
+  gmailOption.onclick=e=>{e.preventDefault(); window.open("https://mail.google.com/mail/?view=cm&fs=1&to=trsturkeyofficial@gmail.com&su=Teklif%20Talebi&body=Merhaba%20TRS,%20bir%20teklif%20almak%20istiyorum.","_blank"); popup.style.display='none'; document.body.style.overflow='auto';}
 </script>
+
 </body>
 </html>
